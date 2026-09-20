@@ -16,7 +16,7 @@ export class AdminModal {
     this.sourceImage = null;
     this.processedCanvas = null;
 
-    this.adminPasswordKey = 'receipt_blog_admin_key';
+    this.adminPasswordKey = 'github_blog_token';
   }
 
   getAdminKey() {
@@ -75,31 +75,34 @@ export class AdminModal {
     backdrop.innerHTML = `
       <div class="admin-desk" role="dialog" aria-label="Owner Writing Desk">
         <div class="admin-desk-header">
-          <span>&gt; THERMAL WRITING DESK [OWNER CONSOLE]</span>
+          <span>&gt; THERMAL WRITING DESK [GITHUB OWNER CONSOLE]</span>
           <button class="close-btn" id="close-admin-btn">&times;</button>
         </div>
 
         <div class="admin-desk-body">
-          <!-- INLINE AUTHENTICATION SECTION -->
-          <div id="admin-auth-section" style="display: flex; flex-direction: column; align-items: center; text-align: center; padding: 2.5rem 1rem; gap: 1rem;">
+          <!-- INLINE GITHUB AUTHENTICATION SECTION -->
+          <div id="admin-auth-section" style="display: flex; flex-direction: column; align-items: center; text-align: center; padding: 2rem 1rem; gap: 0.9rem;">
             <div style="font-family: var(--font-display); font-size: 2.2rem; letter-spacing: 0.08em;">
-              *** RESTRICTED TERMINAL ***
+              *** GITHUB STORAGE ACCESS ***
             </div>
-            <p style="font-family: var(--font-mono); font-size: 0.8rem; max-width: 420px; line-height: 1.5; color: var(--ink-secondary);">
-              This console allows the owner to publish new thermal receipts and dither images.
-              Enter your access key below to authenticate (Default: <code>admin</code>).
+            <p style="font-family: var(--font-mono); font-size: 0.8rem; max-width: 460px; line-height: 1.5; color: var(--ink-secondary);">
+              Connect your <strong>Adebowale-hub/blog</strong> repository so posts and 1-bit images save permanently to GitHub.
             </p>
-            <div style="display: flex; gap: 0.5rem; width: 100%; max-width: 360px; margin-top: 0.5rem;">
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; background: var(--paper-shade); border: 1px dashed var(--ink); padding: 0.8rem; max-width: 460px; text-align: left;">
+              1. Generate a GitHub Personal Access Token (classic) with <code>repo</code> scope.<br>
+              2. <a href="https://github.com/settings/tokens/new?scopes=repo&description=ThermalBlogToken" target="_blank" rel="noopener" style="color: var(--ink); text-decoration: underline; font-weight: bold;">Click here to generate your token &rarr;</a><br>
+              3. Paste the token below. It will stay securely in your browser only.
+            </div>
+            <div style="display: flex; gap: 0.5rem; width: 100%; max-width: 460px; margin-top: 0.3rem;">
               <input 
                 type="password" 
                 id="auth-key-input" 
                 class="form-input" 
-                placeholder="ENTER ACCESS KEY..." 
-                style="flex: 1; text-align: center; letter-spacing: 0.2em;"
-                value="admin"
+                placeholder="Paste GitHub Token (ghp_...)" 
+                style="flex: 1; font-family: var(--font-mono); font-size: 0.8rem;"
               />
               <button type="button" class="btn-primary" id="auth-unlock-btn">
-                UNLOCK
+                CONNECT
               </button>
             </div>
           </div>
@@ -289,13 +292,39 @@ export class AdminModal {
     invertCheck.addEventListener('change', updateDither);
 
     // Insert dithered image button
-    this.modalEl.querySelector('#insert-dither-btn').addEventListener('click', () => {
+    const insertBtn = this.modalEl.querySelector('#insert-dither-btn');
+    insertBtn.addEventListener('click', async () => {
       if (!this.processedCanvas) return;
-      const dataUrl = this.processedCanvas.toDataURL('image/png');
-      const textarea = this.modalEl.querySelector('#post-content');
-      const insertText = `\n![1-Bit Capture](${dataUrl})\n`;
-      textarea.value += insertText;
-      alert('1-Bit Dither image inserted into content!');
+      
+      const adminKey = this.getAdminKey();
+      const origText = insertBtn.textContent;
+      insertBtn.disabled = true;
+      insertBtn.textContent = adminKey ? '[ UPLOADING TO GITHUB... ]' : '[ PROCESSING IMAGE... ]';
+
+      try {
+        const dataUrl = this.processedCanvas.toDataURL('image/png');
+        const filename = `dither-${Date.now().toString(36)}.png`;
+        
+        let imgUrl = dataUrl;
+        if (this.storage.uploadImage) {
+          imgUrl = await this.storage.uploadImage(dataUrl, filename, adminKey);
+        }
+
+        const textarea = this.modalEl.querySelector('#post-content');
+        const insertText = `\n![1-Bit Capture](${imgUrl})\n`;
+        textarea.value += insertText;
+
+        if (adminKey && imgUrl !== dataUrl) {
+          alert(`1-Bit image uploaded directly to GitHub repository at ${imgUrl}!`);
+        } else {
+          alert('1-Bit image inserted into content!');
+        }
+      } catch (err) {
+        alert(`Could not upload image to GitHub: ${err.message}`);
+      } finally {
+        insertBtn.disabled = false;
+        insertBtn.textContent = origText;
+      }
     });
   }
 
@@ -396,13 +425,22 @@ export class AdminModal {
       readingTime
     };
 
+    const saveBtn = this.modalEl.querySelector('#save-post-btn');
+    const origText = saveBtn.textContent;
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'COMMITTING TO GITHUB...';
+
     try {
       const adminKey = this.getAdminKey();
       await this.storage.savePost(postData, adminKey);
       this.close();
       if (this.onPostSaved) this.onPostSaved(postData);
+      alert('Receipt successfully published and saved to GitHub!');
     } catch (err) {
-      alert(`Failed to save post: ${err.message}`);
+      alert(`Failed to save post to GitHub: ${err.message}`);
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = origText;
     }
   }
 

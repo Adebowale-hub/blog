@@ -1,8 +1,8 @@
 /**
  * GITHUB REPOSITORY STORAGE ADAPTER
- * Stores and retrieves blog posts directly from a GitHub repository (e.g. Adebowale-hub/blog).
- * - Visitors: Read-only access via GitHub raw/contents API with ZERO auth required.
- * - Owner: Uses GitHub Personal Access Token (PAT) to commit and push updates directly to the repo.
+ * Stores and retrieves blog posts and 1-bit images directly from Adebowale-hub/blog.
+ * - Visitors: Read-only access via GitHub raw CDN (zero auth required, always free).
+ * - Owner: Uses GitHub Personal Access Token (PAT) to commit updates directly to the repo.
  */
 
 import { StorageInterface } from './storage-interface.js';
@@ -22,20 +22,29 @@ export class GitHubStorage extends StorageInterface {
     return `https://raw.githubusercontent.com/${this.owner}/${this.repo}/${this.branch}/${this.postsPath}`;
   }
 
-  getApiUrl() {
-    return `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${this.postsPath}`;
+  getApiUrl(path = this.postsPath) {
+    return `https://api.github.com/repos/${this.owner}/${this.repo}/contents/${path}`;
   }
 
+  /**
+   * Fetch latest posts from GitHub with cache-busting timestamp
+   */
   async getPosts() {
     try {
-      const res = await fetch(this.getRawUrl(), { cache: 'no-cache' });
+      // Timestamp query bypasses raw.githubusercontent CDN cache so new posts appear on refresh
+      const res = await fetch(`${this.getRawUrl()}?t=${Date.now()}`, { cache: 'no-store' });
       if (!res.ok) {
-        // If file doesn't exist yet on GitHub, fallback to local seed posts
         return this.fallback.getPosts();
       }
       const data = await res.json();
-      return Array.isArray(data) ? data : this.fallback.getPosts();
-    } catch {
+      if (Array.isArray(data) && data.length > 0) {
+        // Cache to local fallback for instant offline access
+        localStorage.setItem('receipt_blog_posts_v1', JSON.stringify(data));
+        return data;
+      }
+      return this.fallback.getPosts();
+    } catch (err) {
+      console.warn('Could not reach GitHub raw CDN, loading cached/fallback posts:', err);
       return this.fallback.getPosts();
     }
   }
@@ -45,18 +54,57 @@ export class GitHubStorage extends StorageInterface {
     return posts.find(p => p.id === id) || null;
   }
 
+  /**
+   * Upload a 1-bit dithered image directly to assets/uploads/ in the GitHub repository
+   */
+  async uploadImage(base64DataUrl, filename, githubToken) {
+    if (!githubToken) {
+      // Return data URL as fallback for local testing
+      return base64DataUrl;
+    }
+
+    const cleanFilename = filename || `dither-${Date.now().toString(36)}.png`;
+    const repoPath = `assets/uploads/${cleanFilename}`;
+    const base64Content = base64DataUrl.replace(/^data:image\/\w+;base64,/, '');
+
+    const commitRes = await fetch(this.getApiUrl(repoPath), {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${githubToken}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message: `feat(media): upload 1-bit dithered image ${cleanFilename} [skip ci]`,
+        content: base64Content,
+        branch: this.branch
+      })
+    });
+
+    if (!commitRes.ok) {
+      const err = await commitRes.json().catch(() => ({}));
+      console.warn('GitHub image commit failed, using data URL fallback:', err);
+      return base64DataUrl;
+    }
+
+    // Return the relative asset path that works on both localhost and Vercel
+    return `assets/uploads/${cleanFilename}`;
+  }
+
+  /**
+   * Save / update a post in posts.json on GitHub
+   */
   async savePost(post, githubToken) {
     if (!githubToken) {
-      // If no GitHub PAT token provided, save locally
       return this.fallback.savePost(post);
     }
 
-    // 1. Fetch current posts & sha
+    // 1. Fetch current posts & sha from GitHub API
     let posts = [];
     let fileSha = null;
 
     try {
-      const res = await fetch(this.getApiUrl(), {
+      const res = await fetch(this.getApiUrl(this.postsPath), {
         headers: {
           'Authorization': `Bearer ${githubToken}`,
           'Accept': 'application/vnd.github.v3+json'
@@ -65,19 +113,22 @@ export class GitHubStorage extends StorageInterface {
       if (res.ok) {
         const fileData = await res.json();
         fileSha = fileData.sha;
-        const decoded = atob(fileData.content.replace(/\s/g, ''));
+        const decoded = decodeURIComponent(escape(atob(fileData.content.replace(/\s/g, ''))));
         posts = JSON.parse(decoded);
       }
     } catch {
       posts = await this.fallback.getPosts();
     }
 
-    // 2. Update or insert post
+    // 2. Insert or update the post
     const existingIndex = posts.findIndex(p => p.id === post.id);
+    let updatedPost;
+
     if (existingIndex >= 0) {
-      posts[existingIndex] = { ...posts[existingIndex], ...post, updatedAt: new Date().toISOString() };
+      updatedPost = { ...posts[existingIndex], ...post, updatedAt: new Date().toISOString() };
+      posts[existingIndex] = updatedPost;
     } else {
-      const newPost = {
+      updatedPost = {
         ...post,
         id: post.id || `rec-${Date.now().toString(36)}`,
         slipNumber: post.slipNumber || String(8490 + posts.length + 1).padStart(6, '0'),
@@ -85,12 +136,14 @@ export class GitHubStorage extends StorageInterface {
         time: post.time || new Date().toTimeString().split(' ')[0],
         createdAt: new Date().toISOString()
       };
-      posts.unshift(newPost);
+      posts.unshift(updatedPost);
     }
 
-    // 3. Commit updated posts.json to GitHub repository
-    const contentEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(posts, null, 2))));
-    const commitRes = await fetch(this.getApiUrl(), {
+    // 3. Commit updated posts.json to GitHub
+    const jsonString = JSON.stringify(posts, null, 2);
+    const contentEncoded = btoa(unescape(encodeURIComponent(jsonString)));
+
+    const commitRes = await fetch(this.getApiUrl(this.postsPath), {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${githubToken}`,
@@ -98,7 +151,7 @@ export class GitHubStorage extends StorageInterface {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        message: `chore: update receipt dispatch ${post.id || 'new'} [skip ci]`,
+        message: `chore: update receipt dispatch ${updatedPost.id} [skip ci]`,
         content: contentEncoded,
         sha: fileSha || undefined,
         branch: this.branch
@@ -106,24 +159,24 @@ export class GitHubStorage extends StorageInterface {
     });
 
     if (!commitRes.ok) {
-      const err = await commitRes.json();
+      const err = await commitRes.json().catch(() => ({}));
       throw new Error(err.message || 'GitHub commit failed');
     }
 
-    // Also update local fallback cache
-    await this.fallback.savePost(post);
-    return post;
+    // Update local cache
+    localStorage.setItem('receipt_blog_posts_v1', JSON.stringify(posts));
+    return updatedPost;
   }
 
+  /**
+   * Delete a post from posts.json on GitHub
+   */
   async deletePost(id, githubToken) {
     if (!githubToken) {
       return this.fallback.deletePost(id);
     }
 
-    let posts = [];
-    let fileSha = null;
-
-    const res = await fetch(this.getApiUrl(), {
+    const res = await fetch(this.getApiUrl(this.postsPath), {
       headers: {
         'Authorization': `Bearer ${githubToken}`,
         'Accept': 'application/vnd.github.v3+json'
@@ -132,14 +185,16 @@ export class GitHubStorage extends StorageInterface {
 
     if (!res.ok) throw new Error('Could not access posts on GitHub');
     const fileData = await res.json();
-    fileSha = fileData.sha;
-    const decoded = atob(fileData.content.replace(/\s/g, ''));
-    posts = JSON.parse(decoded);
+    const fileSha = fileData.sha;
+    const decoded = decodeURIComponent(escape(atob(fileData.content.replace(/\s/g, ''))));
+    let posts = JSON.parse(decoded);
 
     posts = posts.filter(p => p.id !== id);
 
-    const contentEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(posts, null, 2))));
-    const commitRes = await fetch(this.getApiUrl(), {
+    const jsonString = JSON.stringify(posts, null, 2);
+    const contentEncoded = btoa(unescape(encodeURIComponent(jsonString)));
+
+    const commitRes = await fetch(this.getApiUrl(this.postsPath), {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${githubToken}`,
@@ -155,11 +210,11 @@ export class GitHubStorage extends StorageInterface {
     });
 
     if (!commitRes.ok) {
-      const err = await commitRes.json();
+      const err = await commitRes.json().catch(() => ({}));
       throw new Error(err.message || 'GitHub delete commit failed');
     }
 
-    await this.fallback.deletePost(id);
+    localStorage.setItem('receipt_blog_posts_v1', JSON.stringify(posts));
     return { success: true, id };
   }
 }

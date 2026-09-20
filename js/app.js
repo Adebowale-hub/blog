@@ -3,13 +3,13 @@
  * Orchestrates storage, view rendering, routing, search & tag filtering, and theme switching.
  */
 
-import { VercelApiStorage } from './storage/vercel-api-storage.js';
+import { GitHubStorage } from './storage/github-storage.js';
 import { ReceiptView } from './ui/receipt-view.js';
 import { AdminModal } from './ui/admin-modal.js';
 
 class App {
   constructor() {
-    this.storage = new VercelApiStorage();
+    this.storage = new GitHubStorage('Adebowale-hub', 'blog', 'main', 'posts.json');
     this.view = new ReceiptView();
     this.admin = new AdminModal(this.storage, () => this.refreshData());
 
