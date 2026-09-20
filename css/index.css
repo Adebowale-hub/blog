@@ -1,0 +1,271 @@
+/* ==========================================================================
+   DESIGN TOKENS & MONOCHROME PALETTE
+   Aesthetic: High-contrast 1-Bit Thermal Receipt
+   ========================================================================== */
+
+:root {
+  /* Light / Thermal Paper Mode */
+  --bg: #eceae4;
+  --bg-pattern: #dfdcd4;
+  --paper-bg: #ffffff;
+  --paper-shade: #f5f4ef;
+  --paper-border: #111111;
+  --ink: #0a0a0a;
+  --ink-secondary: #333333;
+  --ink-faint: #666666;
+  --ink-line: #111111;
+  --accent-contrast: #000000;
+  --stamp-ink: #0a0a0a;
+
+  /* Typography */
+  --font-mono: 'Space Mono', 'Courier New', Courier, monospace;
+  --font-receipt: 'Courier Prime', 'Space Mono', monospace;
+  --font-display: 'VT323', monospace;
+
+  /* Sizing & Borders */
+  --receipt-max-width: 580px;
+  --radius-sharp: 0px;
+  --shadow-paper: 0 10px 30px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.12);
+  --shadow-paper-hover: 0 16px 36px rgba(0, 0, 0, 0.14), 0 2px 6px rgba(0, 0, 0, 0.18);
+  
+  /* Sawtooth edge dimension */
+  --teeth-size: 10px;
+}
+
+[data-theme="dark"] {
+  /* Inverted / LCD Dark Thermal Mode */
+  --bg: #09090b;
+  --bg-pattern: #141417;
+  --paper-bg: #121214;
+  --paper-shade: #18181b;
+  --paper-border: #d4d4d8;
+  --ink: #fafafa;
+  --ink-secondary: #d4d4d8;
+  --ink-faint: #888888;
+  --ink-line: #e4e4e7;
+  --accent-contrast: #ffffff;
+  --stamp-ink: #fafafa;
+  --shadow-paper: 0 12px 36px rgba(0, 0, 0, 0.7), 0 0 0 1px #27272a;
+  --shadow-paper-hover: 0 18px 48px rgba(0, 0, 0, 0.9), 0 0 0 1px #3f3f46;
+}
+
+/* Reset & Box Sizing */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 15px;
+  scroll-behavior: smooth;
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-receipt);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  overflow-x: hidden;
+  background: 
+    radial-gradient(var(--bg-pattern) 1px, transparent 1px),
+    var(--bg);
+  background-size: 12px 12px;
+  padding: 2rem 1rem 4rem 1rem;
+}
+
+/* Scrollbar Customization */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ink-line);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-secondary);
+}
+
+/* App Layout Container */
+.app-viewport {
+  width: 100%;
+  max-width: var(--receipt-max-width);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+}
+
+/* Top Global Toolbar */
+.top-controls {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0.8rem;
+  margin-bottom: 1.2rem;
+  border: 1px dashed var(--ink);
+  background: var(--paper-bg);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  box-shadow: 2px 2px 0px var(--ink);
+}
+
+.controls-left, .controls-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.icon-btn {
+  background: transparent;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.15s ease;
+  text-transform: uppercase;
+}
+
+.icon-btn:hover {
+  background: var(--ink);
+  color: var(--paper-bg);
+}
+
+.icon-btn:active {
+  transform: translate(1px, 1px);
+}
+
+.icon-btn.active {
+  background: var(--ink);
+  color: var(--paper-bg);
+}
+
+/* Sound Indicator Pulse */
+.status-indicator {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  background: var(--ink);
+  border-radius: 50%;
+  animation: pulse-dot 1.8s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+/* Search and Filter Ribbon */
+.filter-bar {
+  width: 100%;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.search-wrapper {
+  position: relative;
+  display: flex;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.65rem 0.8rem 0.65rem 2rem;
+  border: 2px solid var(--ink);
+  background: var(--paper-bg);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  outline: none;
+  box-shadow: 3px 3px 0px var(--ink);
+  transition: all 0.15s ease;
+}
+
+.search-input:focus {
+  box-shadow: 5px 5px 0px var(--ink);
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.65rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 0.9rem;
+}
+
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.tag-chip {
+  background: var(--paper-bg);
+  border: 1px solid var(--ink);
+  padding: 0.2rem 0.5rem;
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.tag-chip:hover, .tag-chip.active {
+  background: var(--ink);
+  color: var(--paper-bg);
+}
+
+/* Footer / Machine Info */
+.site-footer {
+  margin-top: 3rem;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  line-height: 1.6;
+}
+
+.site-footer a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.admin-lock-btn {
+  background: none;
+  border: none;
+  color: var(--ink-faint);
+  cursor: pointer;
+  font-size: 0.75rem;
+  margin-top: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.6rem;
+  border: 1px dotted var(--ink-faint);
+}
+
+.admin-lock-btn:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+  background: var(--paper-shade);
+}

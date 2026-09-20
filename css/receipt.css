@@ -1,0 +1,355 @@
+/* ==========================================================================
+   RECEIPT TICKET STYLING & SERRATED TEETH
+   Authentic Thermal Roll, Paper Tear-off, Barcode & Print Styles
+   ========================================================================== */
+
+/* Sawtooth Serrated Edges using CSS mask / gradients */
+.receipt-wrapper {
+  position: relative;
+  width: 100%;
+  margin-bottom: 2.5rem;
+  filter: drop-shadow(0 8px 16px rgba(0,0,0,0.09));
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.receipt-wrapper:hover {
+  transform: translateY(-2px);
+  filter: drop-shadow(0 14px 24px rgba(0,0,0,0.14));
+}
+
+/* Individual Receipt Ticket Container */
+.receipt-ticket {
+  background: var(--paper-bg);
+  color: var(--ink);
+  position: relative;
+  width: 100%;
+  padding: 1.8rem 1.6rem 2.2rem 1.6rem;
+  
+  /* Serrated Top and Bottom Edges via mask */
+  --mask: 
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 
+      50% calc(100% - var(--teeth-size)/2)/calc(var(--teeth-size)*2) var(--teeth-size) repeat-x,
+    conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) 
+      50% calc(var(--teeth-size)/2)/calc(var(--teeth-size)*2) var(--teeth-size) repeat-x,
+    linear-gradient(#000 0 0) 
+      50% 50%/100% calc(100% - var(--teeth-size)*2) no-repeat;
+      
+  -webkit-mask: var(--mask);
+          mask: var(--mask);
+
+  /* Inner paper creases and borders */
+  box-sizing: border-box;
+}
+
+/* Alternative fallback border for browsers where complex mask might clip edges */
+@supports not (mask: var(--mask)) {
+  .receipt-ticket {
+    border-top: 4px dashed var(--ink);
+    border-bottom: 4px dashed var(--ink);
+  }
+}
+
+/* Paper Feed Animation when post is loaded */
+.animate-feed {
+  animation: paper-feed 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: top center;
+}
+
+@keyframes paper-feed {
+  0% {
+    opacity: 0;
+    transform: translateY(-30px) scaleY(0.85);
+    max-height: 0;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+    max-height: 5000px;
+  }
+}
+
+/* Receipt Header / Store Details */
+.receipt-header {
+  text-align: center;
+  border-bottom: 2px dashed var(--ink-line);
+  padding-bottom: 1.2rem;
+  margin-bottom: 1.2rem;
+}
+
+.store-brand {
+  font-family: var(--font-display);
+  font-size: 2.1rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1;
+  margin-bottom: 0.3rem;
+}
+
+.store-tagline {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-secondary);
+  margin-bottom: 0.8rem;
+}
+
+.receipt-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-align: left;
+  border-top: 1px dotted var(--ink-faint);
+  padding-top: 0.6rem;
+  margin-top: 0.6rem;
+}
+
+.receipt-meta-grid div:nth-child(even) {
+  text-align: right;
+}
+
+/* Receipt Body / Article Content */
+.receipt-title {
+  font-family: var(--font-mono);
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.35;
+  margin-bottom: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+
+.receipt-title a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.receipt-title a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.receipt-divider {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--ink-line);
+  letter-spacing: 0.12em;
+  overflow: hidden;
+  white-space: nowrap;
+  user-select: none;
+  margin: 1rem 0;
+  text-align: center;
+}
+
+/* Itemized Takeaways / Summary Table */
+.itemized-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  margin: 1.2rem 0;
+}
+
+.itemized-table th {
+  text-align: left;
+  border-bottom: 1px solid var(--ink);
+  padding: 0.4rem 0.2rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.itemized-table td {
+  padding: 0.4rem 0.2rem;
+  vertical-align: top;
+  border-bottom: 1px dotted var(--ink-faint);
+}
+
+.itemized-table td.col-qty {
+  width: 40px;
+}
+
+.itemized-table td.col-price {
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Article Body Typography */
+.receipt-content {
+  font-family: var(--font-receipt);
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: var(--ink);
+  margin-bottom: 1.4rem;
+}
+
+.receipt-content p {
+  margin-bottom: 1rem;
+}
+
+.receipt-content p:last-child {
+  margin-bottom: 0;
+}
+
+.receipt-content blockquote {
+  border-left: 3px solid var(--ink);
+  padding-left: 0.8rem;
+  margin: 1.2rem 0;
+  font-style: italic;
+}
+
+.receipt-content pre {
+  background: var(--paper-shade);
+  border: 1px solid var(--ink);
+  padding: 0.8rem;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  margin: 1rem 0;
+}
+
+.receipt-content code {
+  font-family: var(--font-mono);
+  background: var(--paper-shade);
+  padding: 0.1rem 0.3rem;
+  border: 1px solid var(--ink-faint);
+  font-size: 0.85em;
+}
+
+.receipt-content ul, .receipt-content ol {
+  padding-left: 1.4rem;
+  margin: 1rem 0;
+}
+
+.receipt-content li {
+  margin-bottom: 0.4rem;
+}
+
+/* Subtotal / Footer Totals */
+.receipt-totals {
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+  padding: 0.8rem 0;
+  margin: 1.2rem 0;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+.totals-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.35rem;
+}
+
+.totals-row.grand-total {
+  font-size: 1.05rem;
+  font-weight: 700;
+  border-top: 1px dashed var(--ink);
+  padding-top: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+/* Barcode & Perforation Cut */
+.receipt-barcode-wrap {
+  text-align: center;
+  padding-top: 1.2rem;
+  margin-top: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.barcode-svg {
+  width: 220px;
+  height: 48px;
+  filter: contrast(200%);
+}
+
+.barcode-digits {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.25em;
+}
+
+.receipt-farewell {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 1rem;
+  color: var(--ink-secondary);
+}
+
+/* Receipt Actions Row */
+.receipt-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1rem;
+  margin-top: 1rem;
+  border-top: 1px dotted var(--ink-faint);
+}
+
+/* Single Post View Full Screen or Modal View */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--paper-bg);
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  padding: 0.4rem 0.8rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  cursor: pointer;
+  margin-bottom: 1.2rem;
+  text-decoration: none;
+  box-shadow: 2px 2px 0px var(--ink);
+}
+
+.back-btn:hover {
+  background: var(--ink);
+  color: var(--paper-bg);
+}
+
+/* ==========================================================================
+   PRINT MEDIA STYLING (PHYSICAL RECEIPT CAPABLE)
+   ========================================================================== */
+@media print {
+  body {
+    background: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    color: #000000 !important;
+  }
+
+  .top-controls, .filter-bar, .site-footer, .back-btn, .receipt-actions, .admin-lock-btn {
+    display: none !important;
+  }
+
+  .app-viewport {
+    max-width: 100% !important;
+  }
+
+  .receipt-wrapper {
+    box-shadow: none !important;
+    margin: 0 auto !important;
+    page-break-after: always;
+  }
+
+  .receipt-ticket {
+    -webkit-mask: none !important;
+    mask: none !important;
+    border-top: 2px solid #000 !important;
+    border-bottom: 2px solid #000 !important;
+    padding: 1rem !important;
+    width: 100% !important;
+  }
+
+  .barcode-svg {
+    filter: none !important;
+  }
+}

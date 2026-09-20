@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>THERMAL DISPATCH // 1-Bit Receipt Blog</title>
+  <meta name="description" content="Personal monospaced black & white blog with thermal receipt ticket aesthetics and real-time 1-bit dithering." />
+
+  <!-- Google Fonts: Space Mono, Courier Prime, VT323 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=VT323&display=swap" rel="stylesheet" />
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/index.css" />
+  <link rel="stylesheet" href="css/receipt.css" />
+  <link rel="stylesheet" href="css/dither.css" />
+</head>
+<body>
+  <div class="app-viewport">
+    <!-- Top Global Controls Ribbon -->
+    <header class="top-controls" role="banner">
+      <div class="controls-left">
+        <span class="status-indicator" title="Thermal Register Online"></span>
+        <span>SYS.ONLINE &bull; STATION-01</span>
+      </div>
+      <div class="controls-right">
+        <button id="theme-toggle-btn" class="icon-btn" title="Toggle Invert / Dark LCD Mode">
+          [ INVERT: OFF ]
+        </button>
+        <button id="sound-toggle-btn" class="icon-btn" title="Toggle Mechanical Printer Audio">
+          [ AUDIO: ON ]
+        </button>
+        <button id="new-post-btn" class="icon-btn" title="Owner Post Composer (Ctrl+Shift+A)">
+          [ + NEW ]
+        </button>
+      </div>
+    </header>
+
+    <!-- Search & Filter Ribbon -->
+    <section id="filter-bar" class="filter-bar" aria-label="Search and Filter">
+      <div class="search-wrapper">
+        <span class="search-icon">&gt;</span>
+        <input 
+          type="search" 
+          id="search-input" 
+          class="search-input" 
+          placeholder="SEARCH TICKETS BY KEYWORD..." 
+          aria-label="Search blog posts"
+        />
+      </div>
+      <nav id="tag-cloud" class="tag-cloud" aria-label="Category Tags"></nav>
+    </section>
+
+    <!-- Main Receipt Feed / Single Ticket View -->
+    <main id="receipts-container" class="receipt-feed" role="main"></main>
+
+    <!-- Footer / Machine Metadata -->
+    <footer class="site-footer" role="contentinfo">
+      <p>================================================</p>
+      <p>THERMAL DISPATCH REGISTER &bull; MODEL-1BIT-2026</p>
+      <p>READ-ONLY VISITOR ACCESS &bull; HOSTED ON VERCEL</p>
+      <p>&copy; 2026 PERSONAL LOG &bull; ALL RIGHTS RESERVED</p>
+      <button id="admin-lock-btn" class="admin-lock-btn" title="Owner Writing Console (Ctrl+Shift+A)">
+        &#128274; OWNER ACCESS KEY
+      </button>
+    </footer>
+  </div>
+
+  <!-- Main Application Script -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

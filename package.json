@@ -1,0 +1,20 @@
+{
+  "name": "receipt-dither-blog",
+  "version": "1.0.0",
+  "description": "Black & White Receipt Ticket & 1-Bit Dither Personal Blog",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx -y serve .",
+    "dev": "npx -y serve ."
+  },
+  "keywords": [
+    "blog",
+    "receipt",
+    "1-bit",
+    "dither",
+    "monochrome",
+    "vercel"
+  ],
+  "author": "Thermal Dispatch",
+  "license": "MIT"
+}
