@@ -445,17 +445,26 @@ export class AdminModal {
   }
 
   async handleDelete() {
-    if (!this.currentPost || !confirm(`Delete "${this.currentPost.title}" permanently?`)) {
+    if (!this.currentPost || !confirm(`Delete "${this.currentPost.title}" permanently from your GitHub repository?`)) {
       return;
     }
+
+    const deleteBtn = this.modalEl.querySelector('#delete-post-btn');
+    const origText = deleteBtn.textContent;
+    deleteBtn.disabled = true;
+    deleteBtn.textContent = 'DELETING FROM GITHUB...';
 
     try {
       const adminKey = this.getAdminKey();
       await this.storage.deletePost(this.currentPost.id, adminKey);
       this.close();
       if (this.onPostSaved) this.onPostSaved(null);
+      alert('Receipt ticket deleted permanently from GitHub!');
     } catch (err) {
       alert(`Failed to delete post: ${err.message}`);
+    } finally {
+      deleteBtn.disabled = false;
+      deleteBtn.textContent = origText;
     }
   }
 }
