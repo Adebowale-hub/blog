@@ -37,8 +37,8 @@ export class GitHubStorage extends StorageInterface {
         return this.fallback.getPosts();
       }
       const data = await res.json();
-      if (Array.isArray(data) && data.length > 0) {
-        // Cache to local fallback for instant offline access
+      if (Array.isArray(data)) {
+        // Cache to local storage
         localStorage.setItem('receipt_blog_posts_v1', JSON.stringify(data));
         return data;
       }

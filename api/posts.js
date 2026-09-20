@@ -4,39 +4,8 @@
  * - POST / PUT / DELETE: Protected by ADMIN_PASSWORD environment variable.
  */
 
-// In-memory / KV mock storage fallback for serverless execution
-let postsDatabase = [
-  {
-    id: "rec-001",
-    slipNumber: "008491",
-    station: "TERMINAL #01",
-    date: "2026-09-18",
-    time: "21:42:10",
-    title: "THE POETICS OF 1-BIT MONOCHROME",
-    author: "user",
-    tags: ["AESTHETICS", "DITHERING", "GRAPHICS"],
-    summary: "Reflections on limiting oneself to two colors: black and white, presence and absence.",
-    items: [
-      { qty: "01", name: "Bayer Matrix Stippling", price: "READ" },
-      { qty: "02", name: "Error Diffusion Philosophy", price: "READ" },
-      { qty: "03", name: "Memory Savings of 1-Bit", price: "READ" }
-    ],
-    readingTime: "3 MIN",
-    wordCount: 520,
-    stamp: "ORIGINAL",
-    content: `
-When you remove color from an interface, you are not taking something away—you are forcing geometry, rhythm, and texture to speak without distraction.
-
-![THERMAL SYSTEM v0.9 // 1-BIT DITHER](assets/retro_terminal_1bit.jpg)
-
-### The Thermal Paper Metaphor
-The thermal printer receipt is one of the purest forms of computational print. It does not use ink ribbons or toner cartridges. Instead, a miniature line of heating elements burns microscopic dots directly onto chemically treated paper.
-* High thermal contrast.
-* Zero grayscale nuance—either the heat element fires, or it does not.
-* A transient slip of paper meant to commemorate a moment in time: a transaction, a note, a dispatch.
-    `
-  }
-];
+// In-memory / KV storage fallback for serverless execution
+let postsDatabase = [];
 
 export default async function handler(req, res) {
   // Set CORS and Security headers

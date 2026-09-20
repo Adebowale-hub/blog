@@ -87,18 +87,39 @@ export class ReceiptView {
 
     if (!posts || posts.length === 0) {
       containerEl.innerHTML = `
-        <div class="receipt-wrapper">
+        <div class="receipt-wrapper animate-feed">
           <div class="receipt-ticket">
             <div class="receipt-header">
               <div class="store-brand">THERMAL LOG</div>
-              <div class="store-tagline">*** NO ENTRIES FOUND ***</div>
+              <div class="store-tagline">*** ROLL STATUS: READY ***</div>
+              <div class="receipt-meta-grid">
+                <div>STATION: TERMINAL #01</div>
+                <div>SLIP #: 000000</div>
+                <div>STATUS: EMPTY ROLL</div>
+                <div>STORAGE: GITHUB CLOUD</div>
+              </div>
             </div>
-            <div class="receipt-content" style="text-align: center; padding: 2rem 0;">
-              NO TICKETS MATCH YOUR CRITERIA.
+            <div class="receipt-divider">================================</div>
+            <div class="receipt-content" style="text-align: center; padding: 1.8rem 0;">
+              <p style="font-size: 1rem; font-weight: 700; text-transform: uppercase;">NO DISPATCHES RECORDED YET</p>
+              <p style="font-size: 0.8rem; color: var(--ink-secondary); margin-top: 0.5rem; line-height: 1.5;">
+                The thermal paper roll is clean and waiting for your first dispatch.
+              </p>
+              <button class="icon-btn" id="empty-new-btn" style="margin-top: 1.2rem; padding: 0.5rem 1rem; font-size: 0.8rem;">
+                [ + WRITE YOUR FIRST RECEIPT ]
+              </button>
+            </div>
+            <div class="receipt-divider">--------------------------------</div>
+            <div class="receipt-farewell">
+              *** PRESS [ + NEW ] OR CTRL+SHIFT+A TO COMPOSE ***
             </div>
           </div>
         </div>
       `;
+
+      containerEl.querySelector('#empty-new-btn')?.addEventListener('click', () => {
+        document.getElementById('new-post-btn')?.click();
+      });
       return;
     }
 
